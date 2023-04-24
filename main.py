@@ -1,7 +1,11 @@
 import tkinter as tk
 from shutil import copytree
-from os.path import exists
+from os.path import exists, join, basename, relpath
+from os import startfile, walk, rename
 from pathlib import Path
+import zipfile as zip
+from tempfile import gettempdir
+from uuid import uuid4
 map = []
 file_entry = None
 new_map = {}
@@ -21,8 +25,10 @@ mode_options = ["Singleplayer"]
 #                "Multiplayer"]
 
 def start():
+    #startfile("D:/sdl_test")
     root = tk.Tk()
     root.title("Project")
+    root.resizable(False, False)
     new_button = tk.Button(root, text="New Project", width=20, command=lambda: new_project_ui(root)).grid(row=0, column=0)
     load_button = tk.Button(root, text="Load Project", width=20, command=lambda: load_project_ui(root)).grid(row=1, column=0)
     root.mainloop()
@@ -64,11 +70,28 @@ def load_project(_root, path):
     project_mode = options[1][1]
     main()
     
+def export_project():
+    rootdir = basename(project_path)
+    print(f"{gettempdir()}\\.{uuid4()}\\engine")
+    temp_path = f"{gettempdir()}\\.{uuid4()}\\engine"
+    copytree(f"{project_path}", temp_path)
+    with zip.ZipFile("test.zip", mode="w") as archive:
+        startfile(temp_path)
+        for dirpath, dirnames, filenames in walk(temp_path):
+            for filename in filenames:
+                filepath = join(dirpath, filename)
+                parentpath = relpath(filepath, project_path)
+                arcname = join(rootdir, parentpath)
+                archive.write(filepath, arcname)
+        archive.write(filepath, arcname)
+
+    
 def new_project_ui(_root):
     global mode_options, project_n, path_entry, mode_choice
     _root.destroy()
     root = tk.Tk()
     root.title("New Project")
+    root.resizable(False, False)
     np_label = tk.Label(root, text="New Project").grid(row=0, column=0)
     name_label = tk.Label(root, text="Project Name: ").grid(row=1, column=0)
     project_n = tk.Entry(root,  width=20)
@@ -89,6 +112,7 @@ def load_project_ui(_root):
     _root.destroy()
     root = tk.Tk()
     root.title("New Project")
+    root.resizable(False, False)
     np_label = tk.Label(root, text="Load Project").grid(row=0, column=0)
     path_label = tk.Label(root, text="Path: ").grid(row=3, column=0)
     path_entry = tk.Entry(root,  width=20)
@@ -140,7 +164,9 @@ def main():
     root.title("Select")
     root.resizable(False, False)
     map_editor_button = tk.Button(root, text='Map Editor', width=30, command=lambda: map_editor(root)).grid(row=0, column=0)
-    exit_button = tk.Button(root, text='Exit', width=30, command=lambda: root.destroy()).grid(row=1, column=0)
+    assets_button = tk.Button(root, text='Open Assets Folder', width=30, command=lambda: startfile(f"{project_path}\\assets")).grid(row=1, column=0)
+    export_button = tk.Button(root, text='Export Project', width=30, command=lambda: export_project()).grid(row=2, column=0)
+    exit_button = tk.Button(root, text='Exit', width=30, command=lambda: root.destroy()).grid(row=3, column=0)
     root.mainloop()
 
 def map_editor(_root):
@@ -156,8 +182,10 @@ def map_editor(_root):
     obj = tk.Entry(root, width=20)
     obj.grid(row=2, column=0)
     button = tk.Button(root, text="Set", width=15, command=set).grid(row=3, column=0)
-    save_button = tk.Button(root, text="Save .map collision file", command=lambda: save(f"{project_path}\\maps\\collision.map")).grid(row=0, column=2)
-    open_button = tk.Button(root, text='Load .map collision file', command=lambda:load(f"{project_path}\\maps\\collision.map")).grid(row=0, column=1)
+    col_save_button = tk.Button(root, text="Save .map collision file", command=lambda: save(f"{project_path}\\maps\\collision.map")).grid(row=0, column=2)
+    col_open_button = tk.Button(root, text='Load .map collision file', command=lambda:load(f"{project_path}\\maps\\collision.map")).grid(row=0, column=1)
+    light_save_button = tk.Button(root, text="Save .map light file", command=lambda: save(f"{project_path}\\maps\\light.map")).grid(row=1, column=2)
+    light_open_button = tk.Button(root, text='Load .map light file', command=lambda:load(f"{project_path}\\maps\\light.map")).grid(row=1, column=1)
     back_button = tk.Button(root, text='Back', command=lambda: back(root)).grid(row=3, column=1)
     root.mainloop()
 
