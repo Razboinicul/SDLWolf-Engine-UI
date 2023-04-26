@@ -4,7 +4,6 @@ from os.path import exists, join, basename, relpath
 from os import startfile, walk, rename
 from pathlib import Path
 import zipfile as zip
-from tempfile import gettempdir
 from uuid import uuid4
 map = []
 file_entry = None
@@ -72,18 +71,18 @@ def load_project(_root, path):
     
 def export_project():
     rootdir = basename(project_path)
-    print(f"{gettempdir()}\\.{uuid4()}\\engine")
-    temp_path = f"{gettempdir()}\\.{uuid4()}\\engine"
-    copytree(f"{project_path}", temp_path)
-    with zip.ZipFile("test.zip", mode="w") as archive:
-        startfile(temp_path)
-        for dirpath, dirnames, filenames in walk(temp_path):
+    with zip.ZipFile("export.zip", mode="w") as archive:
+        startfile(f"{project_path}")
+        for dirpath, dirnames, filenames in walk(f"{project_path}"):
             for filename in filenames:
                 filepath = join(dirpath, filename)
                 parentpath = relpath(filepath, project_path)
                 arcname = join(rootdir, parentpath)
                 archive.write(filepath, arcname)
         archive.write(filepath, arcname)
+    rename("export.zip", "export.wolfpkg")
+    rename("export.wolfpkg", f"{project_path}\\export.wolfpkg")
+    
 
     
 def new_project_ui(_root):
