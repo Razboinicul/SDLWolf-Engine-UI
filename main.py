@@ -19,6 +19,8 @@ project_name = None
 project_path = None
 project_mode = None
 project_file_path = None
+load_text = None
+text_edit = None
 options = {}
 mode_options = ["Singleplayer"]
 #                "Multiplayer"]
@@ -154,6 +156,21 @@ def save(path):
     raw_map.write(text)
     raw_map.close()
     
+def load_file(filepath, text):
+    f = open(filepath, "r")
+    load_text = f.readlines()
+    temp = """"""
+    for l in load_text:
+        temp = temp+l
+    text.delete(0.3, "end")
+    text.insert(0.3, temp)
+    f.close()
+    
+def save_file(filepath, text):
+    f = open(filepath, "w")
+    f.writelines(text)
+    f.close()
+    
 def back(root):
     root.destroy()
     main()
@@ -163,9 +180,24 @@ def main():
     root.title("Select")
     root.resizable(False, False)
     map_editor_button = tk.Button(root, text='Map Editor', width=30, command=lambda: map_editor(root)).grid(row=0, column=0)
-    assets_button = tk.Button(root, text='Open Assets Folder', width=30, command=lambda: startfile(f"{project_path}\\assets")).grid(row=1, column=0)
-    export_button = tk.Button(root, text='Export Project', width=30, command=lambda: export_project()).grid(row=2, column=0)
-    exit_button = tk.Button(root, text='Exit', width=30, command=lambda: root.destroy()).grid(row=3, column=0)
+    text_editor_button = tk.Button(root, text='Text Editor', width=30, command=lambda: text_editor(root)).grid(row=1, column=0)
+    assets_button = tk.Button(root, text='Open Assets Folder', width=30, command=lambda: startfile(f"{project_path}\\assets")).grid(row=2, column=0)
+    export_button = tk.Button(root, text='Export Project', width=30, command=lambda: export_project()).grid(row=3, column=0)
+    exit_button = tk.Button(root, text='Exit', width=30, command=lambda: root.destroy()).grid(row=4, column=0)
+    root.mainloop()
+    
+def text_editor(_root):
+    _root.destroy()
+    root = tk.Tk()
+    root.title("Text Editor")
+    root.resizable(False, False)
+    scrollbar =tk.Scrollbar(root, width=1)
+    scrollbar.pack(side=tk.RIGHT)
+    text_edit = tk.Text(root, width=56, height=25)
+    text_edit.pack()
+    scrollbar.config(command=text_edit.yview)
+    load_button = tk.Button(root, text='Load Lua File', width=15, command=lambda: load_file(f"{project_path}\\main.lua", text_edit)).pack()
+    save_button = tk.Button(root, text='Save Lua File', width=15, command=lambda: save_file(f"{project_path}\\main.lua", text_edit.get(0.3, "end"))).pack()
     root.mainloop()
 
 def map_editor(_root):
