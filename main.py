@@ -5,6 +5,7 @@ from os import startfile, walk, rename
 from pathlib import Path
 import zipfile as zip
 from uuid import uuid4
+from subprocess import run
 map = []
 file_entry = None
 new_map = {}
@@ -21,6 +22,7 @@ project_mode = None
 project_file_path = None
 load_text = None
 text_edit = None
+error_l = None
 options = {}
 mode_options = ["Singleplayer"]
 #                "Multiplayer"]
@@ -187,18 +189,30 @@ def main():
     root.mainloop()
     
 def text_editor(_root):
+    global error_l
     _root.destroy()
     root = tk.Tk()
     root.title("Text Editor")
     root.resizable(False, False)
     scrollbar =tk.Scrollbar(root, width=1)
     scrollbar.pack(side=tk.RIGHT)
-    text_edit = tk.Text(root, width=56, height=25)
+    text_edit = tk.Text(root, width=70, height=30)
     text_edit.pack()
     scrollbar.config(command=text_edit.yview)
-    load_button = tk.Button(root, text='Load Lua File', width=15, command=lambda: load_file(f"{project_path}\\main.lua", text_edit)).pack()
-    save_button = tk.Button(root, text='Save Lua File', width=15, command=lambda: save_file(f"{project_path}\\main.lua", text_edit.get(0.3, "end"))).pack()
+    error_l = tk.StringVar(root)
+    error_l.set("-")
+    error = tk.Label(root, textvariable=error_l).pack()
+    analize_button = tk.Button(root, text='Analize Lua Code', width=50, command=lambda: analyze_code(f"{project_path}\\main.lua", text_edit.get(0.3, "end"), root)).pack()
+    save_button = tk.Button(root, text='Save Lua File', width=50, command=lambda: save_file(f"{project_path}\\main.lua", text_edit.get(0.3, "end"))).pack()
+    back_button = tk.Button(root, text='Back', width=50, command=lambda: back(root)).pack()
+    load_file(f"{project_path}\\main.lua", text_edit)
     root.mainloop()
+    
+def analyze_code(filepath, text, root):
+    save_file(filepath, text)
+    process = run(["luau\\luau-analyze.exe", filepath], capture_output=True, text=True)
+    err = process.stderr
+    error_l.set(err)
 
 def map_editor(_root):
     global col, row, obj, project_path
