@@ -6,6 +6,8 @@ from pathlib import Path
 import zipfile as zip
 from uuid import uuid4
 from subprocess import run
+import DiscordRPC
+import threading
 map = []
 file_entry = None
 new_map = {}
@@ -24,6 +26,9 @@ load_text = None
 text_edit = None
 error_l = None
 options = {}
+rpc = DiscordRPC.RPC.Set_ID(app_id=1102676096568275057)
+button = DiscordRPC.button(button_one_label="SDLWolf Engine", button_one_url="https://r9-games.itch.io/sdlwolf-engine", button_two_label="SDLWolf Engine Repository", button_two_url="https://github.com/Noahnoah55/sdlwolf")
+rpc.set_activity(state="                    ", details="Developing a game", buttons=button, timestamp=rpc.timestamp())
 mode_options = ["Singleplayer"]
 #                "Multiplayer"]
 
@@ -233,6 +238,12 @@ def map_editor(_root):
     light_open_button = tk.Button(root, text='Load .map light file', command=lambda:load(f"{project_path}\\maps\\light.map")).grid(row=1, column=1)
     back_button = tk.Button(root, text='Back', command=lambda: back(root)).grid(row=3, column=1)
     root.mainloop()
+    
+def rpc_func():
+    rpc.run()
 
 if __name__ == "__main__":
+    rpc_thread = threading.Thread(target=rpc_func)
+    rpc_thread.daemon = True
+    rpc_thread.start()
     start()
